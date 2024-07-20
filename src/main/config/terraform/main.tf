@@ -28,7 +28,7 @@ resource "aws_subnet" "urotaxi_pubsn1" {
 
 resource "aws_subnet" "urotaxi_prvsn2" {
   vpc_id = aws_vpc.urotaxivpc.id
-  cidr_block = aws_subnet.urotaxi_prvsn2_cidr
+  cidr_block = var.urotaxi_prvsn2_cidr
   tags = {
     Name = "urotaxiPrvsn2"
   }
@@ -37,7 +37,7 @@ resource "aws_subnet" "urotaxi_prvsn2" {
 
 resource "aws_subnet" "urotaxi_prvsn3" {
   vpc_id = aws_vpc.urotaxivpc.id
-  cidr_block = aws_subnet.urotaxi_prvsn3_cidr
+  cidr_block = var.urotaxi_prvsn3_cidr
   tags = {
     Name = "urotaxiPrvsn3"
   }

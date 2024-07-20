@@ -64,7 +64,7 @@ resource "aws_route_table" "urotaxiigrt" {
 
 resource "aws_route_table_association" "uriotaxiigrtassociation" {
   route_table_id = aws_route_table.urotaxiigrt.id
-  subnet_id = aws_subnet.urotaxi_pubsn1
+  subnet_id = aws_subnet.urotaxi_pubsn1.id
 }
 
 resource "aws_security_group" "urotaxijavaserversg" {
@@ -113,7 +113,7 @@ resource "aws_security_group" "urotaxidbsg" {
 
 resource "aws_db_subnet_group" "urotaxidbsngrp" {
   name = "urotaxidbsubnetgrp"
-  subnet_ids = [aws_subnet.urotaxi_prvsn2, aws_subnet.urotaxi_prvsn3]
+  subnet_ids = [aws_subnet.urotaxi_prvsn2.id, aws_subnet.urotaxi_prvsn3.id]
   tags = {
     Name = "urotaxidbsngroup"
   }
@@ -141,7 +141,7 @@ resource "aws_instance" "urotaxiec2" {
   vpc_security_group_ids = [aws_security_group.urotaxijavaserversg.id]
   subnet_id = aws_subnet.urotaxi_pubsn1.id
   ami = var.ami_id
-  key_name = aws_key_pair.urotaxikp
+  key_name = aws_key_pair.urotaxikp.key_name
   instance_type = var.instance_shape
   associate_public_ip_address = true
   tags = {

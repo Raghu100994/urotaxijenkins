@@ -5,10 +5,10 @@ terraform {
     }
   }
   backend "s3" {
-    bucket = "urotaxi-tfstate-bucket072124"
+    bucket = "urotaxi-tfs-bucket"
     region = "ap-south-1"
     key = "terraform.tfstate"
-    dynamodb_table = "tf_lock_table"
+    dynamodb_table = "urotaxi-tfs-lock"
   }
 }
 

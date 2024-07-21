@@ -64,6 +64,14 @@
         dest: /tmp/
       become: yes
 
+    - name: check if db_host is reachable
+      command: "nc -zv {{ lookup('env', 'DB_HOST') }} 3306"
+      register: db_host_reachability
+      ignore_errors: yes
+
+    - debug:
+        msg: "DB Host Reachability: {{ db_host_reachability }}"
+
     - name: create schema
       community.mysql.mysql_db:
         state: import
@@ -72,6 +80,9 @@
         login_host: "{{ lookup('env', 'DB_HOST') }}"
         login_user: "{{ lookup('env', 'UROTAXI_DB_UNAME') }}"
         login_password: "{{ lookup('env', 'UROTAXI_DB_PASSWD') }}"
+        connect_timeout: 30  # Increased timeout
+      become: yes
+      when: db_host_reachability.rc == 0
       
     - name: deploy
       copy:

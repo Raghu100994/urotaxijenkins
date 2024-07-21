@@ -1,19 +1,19 @@
 terraform {
   required_providers {
     aws = {
-        source = "hashicorp/aws"
+      source = "hashicorp/aws"
     }
   }
   backend "s3" {
-    bucket = "urotaxi-tfs-bucket"
-    region = "ap-south-1"
-    key = "terraform.tfstate"
+    bucket         = "urotaxi-tfs-bucket"
+    region         = "ap-south-1"
+    key            = "terraform.tfstate"
     dynamodb_table = "urotaxi-tfs-lock"
   }
 }
 
 provider "aws" {
-    region = "ap-south-1"
+  region = "ap-south-1"
 }
 
 resource "aws_vpc" "urotaxivpc" {
@@ -24,7 +24,7 @@ resource "aws_vpc" "urotaxivpc" {
 }
 
 resource "aws_subnet" "urotaxi_pubsn1" {
-  vpc_id = aws_vpc.urotaxivpc.id
+  vpc_id     = aws_vpc.urotaxivpc.id
   cidr_block = var.urotaxi_pubsn1_cidr
   tags = {
     Name = "urotaxiPusn1"
@@ -33,7 +33,7 @@ resource "aws_subnet" "urotaxi_pubsn1" {
 }
 
 resource "aws_subnet" "urotaxi_prvsn2" {
-  vpc_id = aws_vpc.urotaxivpc.id
+  vpc_id     = aws_vpc.urotaxivpc.id
   cidr_block = var.urotaxi_prvsn2_cidr
   tags = {
     Name = "urotaxiPrvsn2"
@@ -42,7 +42,7 @@ resource "aws_subnet" "urotaxi_prvsn2" {
 }
 
 resource "aws_subnet" "urotaxi_prvsn3" {
-  vpc_id = aws_vpc.urotaxivpc.id
+  vpc_id     = aws_vpc.urotaxivpc.id
   cidr_block = var.urotaxi_prvsn3_cidr
   tags = {
     Name = "urotaxiPrvsn3"
@@ -53,7 +53,7 @@ resource "aws_subnet" "urotaxi_prvsn3" {
 resource "aws_internet_gateway" "urotaxiig" {
   vpc_id = aws_vpc.urotaxivpc.id
   tags = {
-    Name = "urotaxiig" 
+    Name = "urotaxiig"
   }
 }
 
@@ -70,27 +70,27 @@ resource "aws_route_table" "urotaxiigrt" {
 
 resource "aws_route_table_association" "uriotaxiigrtassociation" {
   route_table_id = aws_route_table.urotaxiigrt.id
-  subnet_id = aws_subnet.urotaxi_pubsn1.id
+  subnet_id      = aws_subnet.urotaxi_pubsn1.id
 }
 
 resource "aws_security_group" "urotaxijavaserversg" {
   vpc_id = aws_vpc.urotaxivpc.id
   ingress {
-    from_port = "8080"
-    to_port = "8080"
-    protocol = "tcp"
+    from_port   = "8080"
+    to_port     = "8080"
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
   ingress {
-    from_port = 22
-    to_port = 22
-    protocol = "TCP"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "TCP"
     cidr_blocks = ["0.0.0.0/0"]
   }
   egress {
-    from_port = 0
-    to_port = 0
-    protocol = -1
+    from_port   = 0
+    to_port     = 0
+    protocol    = -1
     cidr_blocks = ["0.0.0.0/0"]
   }
   tags = {
@@ -101,15 +101,15 @@ resource "aws_security_group" "urotaxijavaserversg" {
 resource "aws_security_group" "urotaxidbsg" {
   vpc_id = aws_vpc.urotaxivpc.id
   ingress {
-    from_port = "3306"
-    to_port = "3306"
-    protocol = "tcp"
+    from_port   = "3306"
+    to_port     = "3306"
+    protocol    = "tcp"
     cidr_blocks = ["10.0.0.0/16"]
   }
   egress {
-    from_port = 0
-    to_port = 0
-    protocol = -1
+    from_port   = 0
+    to_port     = 0
+    protocol    = -1
     cidr_blocks = ["0.0.0.0/0"]
   }
   tags = {
@@ -118,7 +118,7 @@ resource "aws_security_group" "urotaxidbsg" {
 }
 
 resource "aws_db_subnet_group" "urotaxidbsngrp" {
-  name = "urotaxidbsubnetgrp"
+  name       = "urotaxidbsubnetgrp"
   subnet_ids = [aws_subnet.urotaxi_prvsn2.id, aws_subnet.urotaxi_prvsn3.id]
   tags = {
     Name = "urotaxidbsngroup"
@@ -139,16 +139,16 @@ resource "aws_db_instance" "urotaxidb" {
 }
 
 resource "aws_key_pair" "urotaxikp" {
-  key_name = "urotaxikey"
+  key_name   = "urotaxikey"
   public_key = var.urotaxi_public_key
 }
 
 resource "aws_instance" "urotaxiec2" {
-  vpc_security_group_ids = [aws_security_group.urotaxijavaserversg.id]
-  subnet_id = aws_subnet.urotaxi_pubsn1.id
-  ami = var.ami_id
-  key_name = aws_key_pair.urotaxikp.key_name
-  instance_type = var.instance_shape
+  vpc_security_group_ids      = [aws_security_group.urotaxijavaserversg.id]
+  subnet_id                   = aws_subnet.urotaxi_pubsn1.id
+  ami                         = var.ami_id
+  key_name                    = aws_key_pair.urotaxikp.key_name
+  instance_type               = var.instance_shape
   associate_public_ip_address = true
   tags = {
     Name = "urotaxiserver"

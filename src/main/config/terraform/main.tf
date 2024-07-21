@@ -4,6 +4,12 @@ terraform {
         source = "hashicorp/aws"
     }
   }
+  backend "s3" {
+    bucket = "urotaxi-tfstate-bucket072124"
+    region = "ap-south-1"
+    key = "terraform.tfstate"
+    dynamodb_table = "tf_lock_table"
+  }
 }
 
 provider "aws" {
@@ -76,10 +82,10 @@ resource "aws_security_group" "urotaxijavaserversg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
   ingress {
-    from_port = "22"
-    to_port = "22"
-    protocol = "ssh"
-    cidr_blocks = ["10.0.0.0/16"]
+    from_port = 22
+    to_port = 22
+    protocol = "TCP"
+    cidr_blocks = ["0.0.0.0/0"]
   }
   egress {
     from_port = 0

@@ -1,0 +1,90 @@
+- name: urotaxi app
+  hosts: all
+  vars:
+    TOMCAT_DOWNLOAD_URL: "https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.91/bin/apache-tomcat-9.0.91.tar.gz"
+    TOMCAT_HOME_DIR: "/u01/middleware/https://apache-tomcat-9.0.91"
+  tasks: 
+    - name: install jdk11
+      apt:
+        name: openjdk-11-jdk
+        state: present
+        update_cache: yes
+      become: yes
+      become_method: sudo
+    - name: create middleware dir
+      file:
+        path: /u01/middleware
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+      become: yes
+      become_method: sudo
+    - name: download tomcat9
+      get_Url:
+        url: "{{TOMCAT_DOWNLOAD_URL}}"
+        dest: /u01/middleware
+    - name: unzip tomcat
+      unarchive:
+        src: "/u01/middleware/apache-tomcat-9.0.91.tar.gz"
+        dest: /u01/middleware
+        remote_src: trues
+    - name: find jdk home
+      shell: "readlink -f $(which java) | sed 's/bin.*//g'"
+      register: JDK_HOME
+    - name: make tomcat as a service
+      template:
+        src: tomcat.service.j2
+        dest: /etc/systemd/system/tomcat.service
+      become: yes
+      become_method: sudo
+      notify:
+        - tomcatreload
+    - name: instal python
+      apt:
+        name: python3-pymysql
+        state: present
+        update_cache: yes
+      become: yes
+      become_method: sudo
+    - name: install mysql client
+      apt:
+        name: mysql-client-8.0
+        state: present
+        update_cache: yes
+      become: yes
+      become_method: sudo
+    - name: copy schema
+      copy:
+        src: "{{ lookup('env','WORKSPACE') }}/src/main/db/urotaxidb.sql"
+        dest: /tmp/
+    - name: create schema
+      community.mysql.mysql_db:
+        state: import
+        name: all
+        target: /tmp/urotaxidb.sql
+        login_host: "{{ lookup('env','DB_HOST') }}"
+        login_user: "{{ lookup('env','UROTAXI_DB_UNAME') }}"
+        login_password: "{{ lookup('env','UROTAXI_DB_PASSWD') }}"
+    - name: deploy
+      copy:
+        src: target/urotaxi.war
+        dest: /u01/middleware/apache-tomcat-9.0.91/webapps
+      notify:
+        - tomcatrestart
+  handlers:
+    - name: tomcatreload
+      service:
+        name: tomcat
+        state: reloaded
+      become: yes
+      become_method: sudo
+    - name: tomcatrestart
+      service:
+        name: tomcat
+        state: restarted
+      become: yes
+      become_method: sudo
+
+
+
+        
